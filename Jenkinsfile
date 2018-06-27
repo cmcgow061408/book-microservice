@@ -4,7 +4,7 @@ pipeline {
     }
     environment {
       ORG               = 'cmcgow061408'
-      APP_NAME          = 'cmcgow'
+      APP_NAME          = 'book-microservice'
       GIT_PROVIDER      = 'github.com'
       CHARTMUSEUM_CREDS = credentials('jenkins-x-chartmuseum')
     }
@@ -19,7 +19,7 @@ pipeline {
           HELM_RELEASE = "$PREVIEW_NAMESPACE".toLowerCase()
         }
         steps {
-          dir ('/home/jenkins/go/src/github.com/cmcgow061408/cmcgow') {
+          dir ('/home/jenkins/go/src/github.com/cmcgow061408/book-microservice') {
             checkout scm
             container('go') {
               sh "make linux"
@@ -29,7 +29,7 @@ pipeline {
               sh "jx step post build --image $DOCKER_REGISTRY/$ORG/$APP_NAME:$PREVIEW_VERSION"
             }
           }
-          dir ('/home/jenkins/go/src/github.com/cmcgow061408/cmcgow/charts/preview') {
+          dir ('/home/jenkins/go/src/github.com/cmcgow061408/book-microservice/charts/preview') {
             container('go') {
               sh "make preview"
               sh "jx preview --app $APP_NAME --dir ../.."
@@ -43,12 +43,12 @@ pipeline {
         }
         steps {
           container('go') {
-            dir ('/home/jenkins/go/src/github.com/cmcgow061408/cmcgow') {
+            dir ('/home/jenkins/go/src/github.com/cmcgow061408/book-microservice') {
               checkout scm
               // so we can retrieve the version in later steps
               sh "echo \$(jx-release-version) > VERSION"
             }
-            dir ('/home/jenkins/go/src/github.com/cmcgow061408/cmcgow/charts/cmcgow') {
+            dir ('/home/jenkins/go/src/github.com/cmcgow061408/book-microservice/charts/book-microservice') {
                 // ensure we're not on a detached head
                 sh "git checkout master"
                 // until we switch to the new kubernetes / jenkins credential implementation use git credentials store
@@ -58,7 +58,7 @@ pipeline {
 
                 sh "make tag"
             }
-            dir ('/home/jenkins/go/src/github.com/cmcgow061408/cmcgow') {
+            dir ('/home/jenkins/go/src/github.com/cmcgow061408/book-microservice') {
               container('go') {
                 sh "make build"
                 sh 'export VERSION=`cat VERSION` && skaffold run -f skaffold.yaml'
@@ -74,7 +74,7 @@ pipeline {
           branch 'master'
         }
         steps {
-          dir ('/home/jenkins/go/src/github.com/cmcgow061408/cmcgow/charts/cmcgow') {
+          dir ('/home/jenkins/go/src/github.com/cmcgow061408/book-microservice/charts/book-microservice') {
             container('go') {
               sh 'jx step changelog --version v\$(cat ../../VERSION)'
 

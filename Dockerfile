@@ -1,4 +1,4 @@
 FROM scratch
 EXPOSE 8080
-ENTRYPOINT ["/cmcgow"]
+ENTRYPOINT ["/book-microservice"]
 COPY ./bin/ /
